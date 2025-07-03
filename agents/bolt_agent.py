@@ -1,4 +1,4 @@
-ffrom transformers import pipeline, AutoTokenizer
+from transformers import pipeline, AutoTokenizer
 import torch
 
 # Global model loading
@@ -8,7 +8,6 @@ _tokenizer = None
 def load_model():
     global _model, _tokenizer
     if _model is None:
-        print("⚙️ Loading Bolt model...")
         model_name = "facebook/bart-large-mnli"
         _tokenizer = AutoTokenizer.from_pretrained(model_name)
         _model = pipeline(
@@ -18,19 +17,21 @@ def load_model():
         )
 
 def process(prompt: str, max_tokens: int = 100) -> str:
-    """Bolt.new agent - optimized for technical topics"""
+    """Bolt.new agent - optimized for technical/performance topics"""
     load_model()  # Ensure model is loaded
+    
+    # Define categories for efficient routing
     categories = ["performance", "optimization", "technical", "code", "algorithm"]
     
     # Classify prompt to determine relevance
-    result = classifier(prompt, categories, multi_label=False)
+    result = _model(prompt, categories, multi_label=False)
     
     if result['scores'][0] < 0.7:
         # Not technical enough - delegate to v0
         return "This appears to be a creative request. Passing to v0 for better handling."
     
     # Generate response with token constraint
-    inputs = tokenizer(
+    inputs = _tokenizer(
         prompt,
         return_tensors="pt",
         truncation=True,
@@ -39,9 +40,9 @@ def process(prompt: str, max_tokens: int = 100) -> str:
     
     # Simplified generation for efficiency
     with torch.no_grad():
-        output = classifier.model.generate(**inputs, max_new_tokens=max_tokens)
+        output = _model.model.generate(**inputs, max_new_tokens=max_tokens)
     
-    return tokenizer.decode(output[0], skip_special_tokens=True)
+    return _tokenizer.decode(output[0], skip_special_tokens=True)
 
 def count_tokens(text: str) -> int:
-    return len(tokenizer.encode(text))
+    return len(_tokenizer.encode(text))
