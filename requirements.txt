@@ -1,0 +1,9 @@
+transformers
+torch
+sentence-transformers
+transformers
+torch
+sentencepiece
+accelerate
+transformers
+torch

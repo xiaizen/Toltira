@@ -1,0 +1,40 @@
+from transformers import pipeline, AutoTokenizer
+import torch
+
+# Load efficient model optimized for speed
+model_name = "facebook/bart-large-mnli"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+classifier = pipeline(
+    "zero-shot-classification",
+    model=model_name,
+    device=0 if torch.cuda.is_available() else -1
+)
+
+def process(prompt: str, max_tokens: int = 100) -> str:
+    """Bolt.new agent - optimized for technical/performance topics"""
+    # Define categories for efficient routing
+    categories = ["performance", "optimization", "technical", "code", "algorithm"]
+    
+    # Classify prompt to determine relevance
+    result = classifier(prompt, categories, multi_label=False)
+    
+    if result['scores'][0] < 0.7:
+        # Not technical enough - delegate to v0
+        return "This appears to be a creative request. Passing to v0 for better handling."
+    
+    # Generate response with token constraint
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt",
+        truncation=True,
+        max_length=min(512, max_tokens * 2)
+    )
+    
+    # Simplified generation for efficiency
+    with torch.no_grad():
+        output = classifier.model.generate(**inputs, max_new_tokens=max_tokens)
+    
+    return tokenizer.decode(output[0], skip_special_tokens=True)
+
+def count_tokens(text: str) -> int:
+    return len(tokenizer.encode(text))
