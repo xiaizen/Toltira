@@ -2,6 +2,7 @@ from . import bolt_agent, v0_agent
 from utils.token_manager import optimize_responses
 from utils.perf_tracker import tracker
 import re
+import html
 
 # Simple response cache
 response_cache = {}
@@ -28,6 +29,18 @@ def allocate_tokens(prompt: str) -> tuple:
     total = 200
     return (100, 100)
 
+def format_response(response: str) -> str:
+    """Format response for HTML output"""
+    # Convert Bolt/v0 prefixes to styled spans
+    response = re.sub(r"🔩 BOLT:", '<span class="bolt">🔩 Bolt:</span>', response)
+    response = re.sub(r"🚀 V0:", '<span class="v0">🚀 v0:</span>', response)
+    
+    # Convert line breaks to HTML
+    response = response.replace('\n\n', '<br><br>')
+    response = response.replace('\n', '<br>')
+    
+    return response
+
 def orchestrate(prompt: str, max_tokens: int = 300) -> str:
     """Coordinator with caching and smart token allocation"""
     tracker.start_timer()  # Start tracking performance
@@ -38,7 +51,7 @@ def orchestrate(prompt: str, max_tokens: int = 300) -> str:
         # Use token counting function from agents
         token_count = bolt_agent.count_tokens(response_cache[cache_key])
         tracker.record(cache_hit=True, token_count=token_count)
-        return response_cache[cache_key] + " [cached]"
+        return format_response(response_cache[cache_key] + " [cached]")
     
     # Allocate tokens based on prompt content
     bolt_tokens, v0_tokens = allocate_tokens(prompt)
@@ -56,4 +69,5 @@ def orchestrate(prompt: str, max_tokens: int = 300) -> str:
     # Record performance (use token counting function)
     token_count = bolt_agent.count_tokens(response)
     tracker.record(token_count=token_count)
-    return response
+    
+    return format_response(response)

@@ -27,7 +27,8 @@ def process(prompt: str, max_tokens: int = 100) -> str:
         num_return_sequences=1,
         temperature=0.7,
         top_k=50,
-        truncation=True
+        truncation=True,
+        pad_token_id=_tokenizer.eos_token_id  # Add this to suppress warning
     )
     return response[0]['generated_text'].replace(prompt, "").strip()
 

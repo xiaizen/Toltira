@@ -7,3 +7,8 @@ sentencepiece
 accelerate
 transformers
 torch
+fastapi
+uvicorn
+python-multipart
+jinja2
+htmx
