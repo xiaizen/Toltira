@@ -29,12 +29,16 @@ class PerformanceTracker:
         cache_rate = (self.cache_hits / self.total_queries) * 100
         
         # Calculate performance grade (A-F)
-        time_grade = "A" if avg_time < 50 else "B" if avg_time < 100 else "C" if avg_time < 200 else "D" if avg_time < 500 else "F"
+        if avg_time < 50: time_grade = "A"
+        elif avg_time < 100: time_grade = "B"
+        elif avg_time < 200: time_grade = "C"
+        elif avg_time < 500: time_grade = "D"
+        else: time_grade = "F"
         
         return (
-            f"⏱️ {avg_time:.1f}ms avg ({time_grade}) | "
+            f"⏱️ {avg_time:.1f}ms ({time_grade}) | "
             f"🗝️ {cache_rate:.1f}% cache | "
-            f"📊 {avg_tokens:.0f} avg tokens"
+            f"📊 {avg_tokens:.0f} tokens"
         )
 
 # Global tracker instance

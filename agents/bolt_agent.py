@@ -1,18 +1,25 @@
-from transformers import pipeline, AutoTokenizer
+ffrom transformers import pipeline, AutoTokenizer
 import torch
 
-# Load efficient model optimized for speed
-model_name = "facebook/bart-large-mnli"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-classifier = pipeline(
-    "zero-shot-classification",
-    model=model_name,
-    device=0 if torch.cuda.is_available() else -1
-)
+# Global model loading
+_model = None
+_tokenizer = None
+
+def load_model():
+    global _model, _tokenizer
+    if _model is None:
+        print("⚙️ Loading Bolt model...")
+        model_name = "facebook/bart-large-mnli"
+        _tokenizer = AutoTokenizer.from_pretrained(model_name)
+        _model = pipeline(
+            "zero-shot-classification",
+            model=model_name,
+            device=0 if torch.cuda.is_available() else -1
+        )
 
 def process(prompt: str, max_tokens: int = 100) -> str:
-    """Bolt.new agent - optimized for technical/performance topics"""
-    # Define categories for efficient routing
+    """Bolt.new agent - optimized for technical topics"""
+    load_model()  # Ensure model is loaded
     categories = ["performance", "optimization", "technical", "code", "algorithm"]
     
     # Classify prompt to determine relevance
