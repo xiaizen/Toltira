@@ -1,0 +1,14 @@
+transformers
+torch
+sentence-transformers
+transformers
+torch
+sentencepiece
+accelerate
+transformers
+torch
+fastapi
+uvicorn
+python-multipart
+jinja2
+htmx

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolt-v0 AI System</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        function sendPrompt() {
+            const prompt = document.getElementById('prompt-input').value;
+            if (!prompt) return;
+            
+            document.getElementById('prompt-input').value = '';
+            document.getElementById('spinner').style.display = 'block';
+            
+            // Add user message to chat history
+            const chatHistory = document.getElementById('chat-history');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user-message';
+            userMsg.textContent = `You: ${prompt}`;
+            chatHistory.appendChild(userMsg);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            
+            // Send request
+            htmx.ajax('POST', '/query', {
+                values: {prompt: prompt},
+                target: '#chat-history',
+                swap: 'beforeend',
+                trigger: 'custom'
+            });
+        }
+        
+      document.addEventListener('htmx:responseError', function(event) {
+    const chatHistory = document.getElementById('chat-history');
+    const errorMsg = document.createElement('div');
+    errorMsg.className = 'message error-message';
+    errorMsg.textContent = 'Error: Could not process request';
+    chatHistory.appendChild(errorMsg);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+document.getElementById('spinner').style.display = 'none';
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Bolt-v0 Unified AI</h1>
+            <div id="stats" hx-get="/stats" hx-trigger="every 5s">
+                <p>Loading stats...</p>
+            </div>
+        </header>
+
+        <div class="chat-container">
+            <div id="chat-history"></div>
+            
+            <div class="input-area">
+                <input type="text" 
+                       id="prompt-input" 
+                       placeholder="Ask anything..."
+                       onkeypress="if(event.key === 'Enter') sendPrompt()">
+                <div class="spinner" id="spinner" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
